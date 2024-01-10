@@ -36,13 +36,15 @@ const CardFlip = ({ term, definition }) => {
 
   return (
     <View style={styles.centerContainer}>
-      <Animated.View
-        style={[styles.card, { width: cardWidth }, frontAnimatedStyle]}
-      >
-        <TouchableOpacity style={styles.cardContainer} onPress={handleFlip}>
-          <Text style={styles.text}>{isFlipped ? term : definition}</Text>
-        </TouchableOpacity>
-      </Animated.View>
+      <TouchableOpacity style={styles.cardContainer} onPress={handleFlip}>
+        <Animated.View
+          style={[styles.card, { width: cardWidth }, frontAnimatedStyle]}
+        >
+          <View style={styles.cardInnerContainer}>
+            <Text style={styles.text}>{isFlipped ? term : definition}</Text>
+          </View>
+        </Animated.View>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -68,6 +70,11 @@ const styles = StyleSheet.create({
     margin: 10,
   },
   cardContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  cardInnerContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
