@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, Button, ScrollView } from "react-native";
+import { View, Text, FlatList, StyleSheet, Modal, Button } from "react-native";
 import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
 import app from "../FirebaseApp";
+import LightBackgroundButton from "../components/LightBackgroundButton";
+import CaseDetailsScreen from "./CaseDetailScreen";
 
 const firestore = getFirestore(app);
 
 const CasesScreen = () => {
   const [cases, setCases] = useState([]);
+  const [selectedCase, setSelectedCase] = useState(null);
+  const [isCaseDetailScreenVisible, setCaseDetailScreenVisibility] =
+    useState(false);
+
   useEffect(() => {
     const fetchCases = async () => {
       try {
@@ -17,39 +23,82 @@ const CasesScreen = () => {
         });
         setCases(casesData);
       } catch (error) {
-        console.Console.error("Error fetching documents: ", error);
+        console.error("Error fetching documents: ", error);
       }
     };
     fetchCases();
   }, []);
 
-  const addCase = async () => {
-    try {
-      const docRef = await addDoc(collection(firestore, "cases"), {
-        name: "This is a test",
-        year: 2024,
-        location: "Chicago, IL",
-      });
-
-      console.log("Document written with ID: ", docRef.id);
-    } catch (error) {
-      console.error("Error adding document: ", error);
-    }
+  const openModal = () => {
+    setCaseDetailScreenVisibility(true);
   };
 
   return (
-    <ScrollView>
-      <View>
-        <Text> Existing Cases: </Text>
-        {cases.map((c) => (
-          <Text
-            key={c.id}
-          >{`Name: ${c.name}, Year: ${c.year}, Location: ${c.location}`}</Text>
-        ))}
-        <Button title="Add Case" onPress={() => addCase()} />
-      </View>
-    </ScrollView>
+    <View>
+      <FlatList
+        data={cases}
+        keyExtractor={(item) => item.id.toString()}
+        ListHeaderComponent={() => (
+          <View>
+            <Text>Existing Cases:</Text>
+          </View>
+        )}
+        renderItem={({ item }) => (
+          <Text>{`Name: ${item.name}, Year: ${item.year}, Location: ${item.location}`}</Text>
+        )}
+        ItemSeparatorComponent={() => (
+          <View
+            style={{
+              height: 1,
+              width: "100%",
+              backgroundColor: "gray",
+            }}
+          />
+        )}
+        ListFooterComponent={() => (
+          <View>
+            <LightBackgroundButton
+              title="Add Case"
+              onPress={() => openModal()}
+            />
+            <Modal
+              animationType="slide"
+              transparent={true}
+              visible={isCaseDetailScreenVisible}
+              onRequestClose={() => setCaseDetailScreenVisibility(false)}
+            >
+              {/* Display the details view in the modal */}
+              <View
+                style={{
+                  flex: 1,
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <View
+                  style={{
+                    backgroundColor: "white",
+                    padding: 20,
+                    borderRadius: 10,
+                  }}
+                >
+                  <CaseDetailsScreen caseData={selectedCase} />
+                  <Button
+                    title="Close"
+                    onPress={() => setCaseDetailScreenVisibility(false)}
+                  />
+                </View>
+              </View>
+            </Modal>
+          </View>
+        )}
+      />
+    </View>
   );
 };
 
 export default CasesScreen;
+
+const styles = StyleSheet.create({
+  container: {},
+});
