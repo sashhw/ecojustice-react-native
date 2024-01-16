@@ -5,15 +5,21 @@ import app from "../FirebaseApp";
 
 const firestore = getFirestore(app);
 
-const CaseDetailsScreen = ({ caseData }) => {
-  const [singleCase, setCase] = useState("");
+const CaseDetailsScreen = ({ closeModal }) => {
+  const [caseName, setCaseName] = useState("");
+  const [location, setLocation] = useState("");
+  const [year, setYear] = useState("");
+  const [body, setBody] = useState("");
+  const [image, setImage] = useState("");
 
   const addCase = async () => {
     try {
       const docRef = await addDoc(collection(firestore, "cases"), {
-        name: "This is a test",
-        year: 2024,
-        location: "Chicago, IL",
+        name: caseName,
+        year: year,
+        location: location,
+        body: body,
+        image: image,
       });
 
       console.log("Document written with ID: ", docRef.id);
@@ -24,14 +30,49 @@ const CaseDetailsScreen = ({ caseData }) => {
 
   return (
     <View style={styles.container}>
-      <View>
-        <TextInput
-          placeholder="Add name"
-          onChangeText={(text) => setCase(text)}
-          value={singleCase}
-        />
-        <Button onPress={addCase} title="Add Case"></Button>
-      </View>
+      <TextInput
+        style={styles.input}
+        placeholder="Add name"
+        onChangeText={(text) => setCaseName(text)}
+        value={caseName}
+        multiline={true}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Add location"
+        onChangeText={(text) => setLocation(text)}
+        value={location}
+        multiline={true}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Add year"
+        onChangeText={(text) => setYear(text)}
+        value={year}
+        multiline={true}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Add body"
+        onChangeText={(text) => setBody(text)}
+        value={body}
+        multiline={true}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Add image"
+        onChangeText={(text) => setImage(text)}
+        value={image}
+        multiline={true}
+      />
+      <Button
+        onPress={() => {
+          closeModal();
+          addCase();
+        }}
+        title="Add Case"
+        disabled={caseName === ""}
+      />
     </View>
   );
 };
@@ -39,5 +80,23 @@ const CaseDetailsScreen = ({ caseData }) => {
 export default CaseDetailsScreen;
 
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    justifyContent: "center",
+    alignItems: "flex-start",
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
+    margin: 20,
+    paddingHorizontal: 60,
+  },
+  input: {
+    width: "100%",
+    maxWidth: 400,
+    height: 40,
+    borderWidth: 1,
+    borderRadius: 4,
+    padding: 10,
+    backgroundColor: "white",
+    marginBottom: 10,
+  },
 });
