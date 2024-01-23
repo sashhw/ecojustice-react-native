@@ -1,32 +1,40 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, StyleSheet, Modal, Button } from "react-native";
-import { getFirestore, collection, addDoc, getDocs } from "firebase/firestore";
+import {
+  View,
+  Text,
+  FlatList,
+  StyleSheet,
+  Modal,
+  Button,
+  Image,
+} from "react-native";
+import { getFirestore, collection, onSnapshot } from "firebase/firestore";
 import app from "../FirebaseApp";
 import LightBackgroundButton from "../components/LightBackgroundButton";
 import CaseDetailsScreen from "./CaseDetailScreen";
 
 const firestore = getFirestore(app);
+const ListItemSeparator = () => <View style={styles.listItemSeparator} />;
 
 const CasesScreen = () => {
   const [cases, setCases] = useState([]);
-  const [selectedCase, setSelectedCase] = useState(null);
   const [isCaseDetailScreenVisible, setCaseDetailScreenVisibility] =
     useState(false);
+  const imageMap = {}; // Replace this with your logic to map item.id to image filenames
 
   useEffect(() => {
-    const fetchCases = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(firestore, "cases"));
+    const unsubscribe = onSnapshot(
+      collection(firestore, "cases"),
+      (querySnapshot) => {
         const casesData = [];
         querySnapshot.forEach((doc) => {
           casesData.push({ id: doc.id, ...doc.data() });
         });
         setCases(casesData);
-      } catch (error) {
-        console.error("Error fetching documents: ", error);
       }
-    };
-    fetchCases();
+    );
+
+    return () => unsubscribe();
   }, []);
 
   const openModal = () => {
@@ -34,27 +42,27 @@ const CasesScreen = () => {
   };
 
   return (
-    <View>
+    <View style={styles.container}>
       <FlatList
         data={cases}
         keyExtractor={(item) => item.id.toString()}
-        ListHeaderComponent={() => (
-          <View>
-            <Text>Existing Cases:</Text>
+        renderItem={({ item }) => (
+          <View style={styles.listItem}>
+            {item.id in imageMap &&
+              (() => {
+                console.log(`asset:/assets/${imageMap[item.id]}`);
+                return (
+                  <Image
+                    source={{ uri: `asset:/assets/${imageMap[item.id]}` }}
+                    style={styles.thumbnail}
+                  />
+                );
+              })()}
+
+            <Text>{`${item.name}`}</Text>
           </View>
         )}
-        renderItem={({ item }) => (
-          <Text>{`Name: ${item.name}, Year: ${item.year}, Location: ${item.location}`}</Text>
-        )}
-        ItemSeparatorComponent={() => (
-          <View
-            style={{
-              height: 1,
-              width: "100%",
-              backgroundColor: "gray",
-            }}
-          />
-        )}
+        ItemSeparatorComponent={ListItemSeparator}
         ListFooterComponent={() => (
           <View>
             <LightBackgroundButton
@@ -67,22 +75,13 @@ const CasesScreen = () => {
               visible={isCaseDetailScreenVisible}
               onRequestClose={() => setCaseDetailScreenVisibility(false)}
             >
-              {/* Display the details view in the modal */}
-              <View
-                style={{
-                  flex: 1,
-                  justifyContent: "center",
-                  alignItems: "center",
-                }}
-              >
-                <View
-                  style={{
-                    backgroundColor: "white",
-                    padding: 20,
-                    borderRadius: 10,
-                  }}
-                >
-                  <CaseDetailsScreen caseData={selectedCase} />
+              <View style={styles.modalContainer}>
+                <View style={styles.modalContent}>
+                  <CaseDetailsScreen
+                    onCaseAdded={() => {
+                      setCaseDetailScreenVisibility(false);
+                    }}
+                  />
                   <Button
                     title="Close"
                     onPress={() => setCaseDetailScreenVisibility(false)}
@@ -97,8 +96,37 @@ const CasesScreen = () => {
   );
 };
 
-export default CasesScreen;
-
 const styles = StyleSheet.create({
-  container: {},
+  container: {
+    marginVertical: 10,
+  },
+  listItemSeparator: {
+    height: 1,
+    width: "100%",
+    backgroundColor: "gray",
+    marginVertical: 10,
+  },
+  listItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 10,
+  },
+  thumbnail: {
+    width: 50,
+    height: 50,
+    marginRight: 10,
+    borderRadius: 25,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
+  },
 });
+
+export default CasesScreen;

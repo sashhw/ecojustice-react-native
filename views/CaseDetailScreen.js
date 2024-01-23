@@ -5,7 +5,7 @@ import app from "../FirebaseApp";
 
 const firestore = getFirestore(app);
 
-const CaseDetailsScreen = ({ closeModal }) => {
+const CaseDetailsScreen = ({ onCaseAdded }) => {
   const [caseName, setCaseName] = useState("");
   const [location, setLocation] = useState("");
   const [year, setYear] = useState("");
@@ -23,6 +23,10 @@ const CaseDetailsScreen = ({ closeModal }) => {
       });
 
       console.log("Document written with ID: ", docRef.id);
+
+      if (onCaseAdded) {
+        onCaseAdded();
+      }
     } catch (error) {
       console.error("Error adding document: ", error);
     }
@@ -67,7 +71,6 @@ const CaseDetailsScreen = ({ closeModal }) => {
       />
       <Button
         onPress={() => {
-          closeModal();
           addCase();
         }}
         title="Add Case"
