@@ -5,7 +5,7 @@ import app from "../FirebaseApp";
 
 const firestore = getFirestore(app);
 
-const CaseDetailsScreen = ({ onCaseAdded }) => {
+const AddCaseModal = ({ onCaseAdded }) => {
   const [caseName, setCaseName] = useState("");
   const [location, setLocation] = useState("");
   const [year, setYear] = useState("");
@@ -80,7 +80,7 @@ const CaseDetailsScreen = ({ onCaseAdded }) => {
   );
 };
 
-export default CaseDetailsScreen;
+export default AddCaseModal;
 
 const styles = StyleSheet.create({
   container: {

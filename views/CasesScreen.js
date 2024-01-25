@@ -6,21 +6,22 @@ import {
   StyleSheet,
   Modal,
   Button,
-  Image,
+  TouchableOpacity,
 } from "react-native";
 import { getFirestore, collection, onSnapshot } from "firebase/firestore";
 import app from "../FirebaseApp";
 import LightBackgroundButton from "../components/LightBackgroundButton";
-import CaseDetailsScreen from "./CaseDetailScreen";
+import AddCaseModal from "./AddCaseModal";
+import CaseDetailsModal from "./CaseDetailsModal";
 
 const firestore = getFirestore(app);
-const ListItemSeparator = () => <View style={styles.listItemSeparator} />;
+const ListItemSeparator = () => <View style={styles.separator} />;
+const SeparatorAfterLastItem = () => <View style={styles.footerSeparator} />;
 
 const CasesScreen = () => {
   const [cases, setCases] = useState([]);
-  const [isCaseDetailScreenVisible, setCaseDetailScreenVisibility] =
-    useState(false);
-  const imageMap = {}; // Replace this with your logic to map item.id to image filenames
+  const [isAddCaseModalVisible, setAddCaseModalVisibility] = useState(false);
+  const [selectedCase, setSelectedCase] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -37,8 +38,16 @@ const CasesScreen = () => {
     return () => unsubscribe();
   }, []);
 
-  const openModal = () => {
-    setCaseDetailScreenVisibility(true);
+  const openAddCaseModal = () => {
+    setAddCaseModalVisibility(true);
+  };
+
+  const openCaseDetailsModal = (item) => {
+    setSelectedCase(item);
+  };
+
+  const closeCaseDetailsModal = () => {
+    setSelectedCase(null);
   };
 
   return (
@@ -46,51 +55,53 @@ const CasesScreen = () => {
       <FlatList
         data={cases}
         keyExtractor={(item) => item.id.toString()}
-        renderItem={({ item }) => (
-          <View style={styles.listItem}>
-            {item.id in imageMap &&
-              (() => {
-                console.log(`asset:/assets/${imageMap[item.id]}`);
-                return (
-                  <Image
-                    source={{ uri: `asset:/assets/${imageMap[item.id]}` }}
-                    style={styles.thumbnail}
-                  />
-                );
-              })()}
-
-            <Text>{`${item.name}`}</Text>
-          </View>
+        renderItem={({ item, index }) => (
+          <TouchableOpacity onPress={() => openCaseDetailsModal(item)}>
+            <View style={styles.listItem}>
+              <Text
+                style={styles.nameText}
+                numberOfLines={1}
+                ellipsizeMode="tail"
+              >{`${item.name}`}</Text>
+            </View>
+          </TouchableOpacity>
         )}
         ItemSeparatorComponent={ListItemSeparator}
         ListFooterComponent={() => (
           <View>
-            <LightBackgroundButton
-              title="Add Case"
-              onPress={() => openModal()}
-            />
             <Modal
               animationType="slide"
               transparent={true}
-              visible={isCaseDetailScreenVisible}
-              onRequestClose={() => setCaseDetailScreenVisibility(false)}
+              visible={isAddCaseModalVisible}
+              onRequestClose={() => setAddCaseModalVisibility(false)}
             >
               <View style={styles.modalContainer}>
                 <View style={styles.modalContent}>
-                  <CaseDetailsScreen
+                  <AddCaseModal
                     onCaseAdded={() => {
-                      setCaseDetailScreenVisibility(false);
+                      setAddCaseModalVisibility(false);
                     }}
                   />
                   <Button
                     title="Close"
-                    onPress={() => setCaseDetailScreenVisibility(false)}
+                    onPress={() => setAddCaseModalVisibility(false)}
                   />
                 </View>
               </View>
             </Modal>
+            <CaseDetailsModal
+              selectedCase={selectedCase}
+              onClose={closeCaseDetailsModal}
+            />
           </View>
         )}
+        ListFooterComponentStyle={styles.footer}
+      />
+      <SeparatorAfterLastItem />
+      <LightBackgroundButton
+        title="Add Case"
+        onPress={() => openAddCaseModal()}
+        style={styles.addCaseButton}
       />
     </View>
   );
@@ -98,24 +109,21 @@ const CasesScreen = () => {
 
 const styles = StyleSheet.create({
   container: {
-    marginVertical: 10,
-  },
-  listItemSeparator: {
-    height: 1,
-    width: "100%",
-    backgroundColor: "gray",
-    marginVertical: 10,
+    flex: 1,
   },
   listItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 10,
+    marginVertical: 12,
   },
-  thumbnail: {
-    width: 50,
-    height: 50,
-    marginRight: 10,
-    borderRadius: 25,
+  separator: {
+    height: 1,
+    backgroundColor: "gray",
+  },
+  footerSeparator: {
+    height: 1,
+    backgroundColor: "gray",
+    opacity: 0.2,
   },
   modalContainer: {
     flex: 1,
@@ -126,6 +134,23 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     padding: 20,
     borderRadius: 10,
+  },
+  nameText: {
+    fontWeight: "300",
+    fontSize: 16,
+    marginHorizontal: 10,
+  },
+  footer: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+  },
+  addCaseButton: {
+    width: 100,
+    marginBottom: 20,
+    alignSelf: "center",
   },
 });
 
