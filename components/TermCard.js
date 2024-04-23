@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Dimensions,
 } from "react-native";
+import Checkbox from "expo-checkbox";
 
 const CardFlip = ({ term, definition }) => {
   const [isFlipped, setFlipped] = useState(false);
@@ -34,6 +35,8 @@ const CardFlip = ({ term, definition }) => {
   const screenWidth = Dimensions.get("window").width;
   const cardWidth = screenWidth - 100;
 
+  const [isChecked, setIsChecked] = useState(false);
+
   return (
     <View style={styles.centerContainer}>
       <TouchableOpacity style={styles.cardContainer} onPress={handleFlip}>
@@ -42,6 +45,7 @@ const CardFlip = ({ term, definition }) => {
         >
           <View style={styles.cardInnerContainer}>
             <Text style={styles.text}>{isFlipped ? term : definition}</Text>
+            <Checkbox value={isChecked} onValueChange={setIsChecked} />
           </View>
         </Animated.View>
       </TouchableOpacity>

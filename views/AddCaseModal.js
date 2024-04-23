@@ -5,7 +5,7 @@ import app from "../FirebaseApp";
 
 const firestore = getFirestore(app);
 
-const AddCaseModal = ({ onCaseAdded }) => {
+const AddCaseModal = ({ onCaseAdded, onClose }) => {
   const [caseName, setCaseName] = useState("");
   const [location, setLocation] = useState("");
   const [year, setYear] = useState("");
@@ -76,6 +76,7 @@ const AddCaseModal = ({ onCaseAdded }) => {
         title="Add Case"
         disabled={caseName === ""}
       />
+      <Button title="Close" onPress={onClose} />
     </View>
   );
 };
@@ -85,7 +86,7 @@ export default AddCaseModal;
 const styles = StyleSheet.create({
   container: {
     justifyContent: "center",
-    alignItems: "flex-start",
+    alignItems: "center",
     backgroundColor: "white",
     padding: 20,
     borderRadius: 10,

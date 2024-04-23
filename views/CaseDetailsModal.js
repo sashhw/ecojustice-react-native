@@ -1,5 +1,6 @@
 import React from "react";
 import { View, Text, Modal, Button, StyleSheet } from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 
 const CaseDetailsModal = ({ selectedCase, onClose }) => {
   if (!selectedCase) {
@@ -14,12 +15,14 @@ const CaseDetailsModal = ({ selectedCase, onClose }) => {
       onRequestClose={onClose}
     >
       <View style={styles.modalContainer}>
-        <View style={styles.modalContent}>
-          <Text>{selectedCase.name}</Text>
-          <Text>{selectedCase.body}</Text>
-          <Text>{selectedCase.year}</Text>
-          <Button title="Close" onPress={onClose} />
-        </View>
+        <ScrollView style={styles.scrollView}>
+          <View style={styles.modalContent}>
+            <Text style={styles.titleFont}>{selectedCase.name}</Text>
+            <Text style={styles.bodyFont}>{selectedCase.body}</Text>
+            <Text>{selectedCase.year}</Text>
+            <Button title="Close" onPress={onClose} />
+          </View>
+        </ScrollView>
       </View>
     </Modal>
   );
@@ -30,11 +33,25 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    marginTop: 100,
+    paddingHorizontal: 30,
+    paddingVertical: 100,
   },
   modalContent: {
     backgroundColor: "white",
     padding: 20,
     borderRadius: 10,
+  },
+  titleFont: {
+    fontSize: 20,
+    marginBottom: 12,
+    fontWeight: "500",
+  },
+  scrollView: {
+    flex: 1,
+  },
+  bodyFont: {
+    fontSize: 16,
   },
 });
 

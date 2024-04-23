@@ -5,9 +5,10 @@ import {
   FlatList,
   StyleSheet,
   Modal,
-  Button,
   TouchableOpacity,
+  Animated,
 } from "react-native";
+import { Swipeable } from "react-native-gesture-handler";
 import { getFirestore, collection, onSnapshot } from "firebase/firestore";
 import app from "../FirebaseApp";
 import LightBackgroundButton from "../components/LightBackgroundButton";
@@ -24,6 +25,7 @@ const CasesScreen = () => {
   const [selectedCase, setSelectedCase] = useState(null);
   const [isCaseDetailsModalVisible, setCaseDetailsModalVisibility] =
     useState(false);
+  const [opacity] = useState(new Animated.Value(1));
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -44,18 +46,32 @@ const CasesScreen = () => {
     setAddCaseModalVisibility(true);
   };
 
+  const closeAddCaseModal = () => {
+    setAddCaseModalVisibility(false);
+  };
+
   const openCaseDetailsModal = (item) => {
     setSelectedCase(item);
     setCaseDetailsModalVisibility(true);
+    Animated.timing(opacity, {
+      toValue: 0.3,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   };
 
   const closeCaseDetailsModal = () => {
     setSelectedCase(null);
     setCaseDetailsModalVisibility(false);
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   };
 
   return (
-    <View style={styles.container}>
+    <Animated.View style={[styles.container, { opacity }]}>
       <FlatList
         data={cases}
         keyExtractor={(item) => item.id.toString()}
@@ -88,13 +104,22 @@ const CasesScreen = () => {
         transparent={true}
         visible={isAddCaseModalVisible}
         onRequestClose={() => setAddCaseModalVisibility(false)}
-      ></Modal>
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <AddCaseModal
+              onCaseAdded={() => setAddCaseModalVisibility(false)}
+              onClose={() => setAddCaseModalVisibility(false)}
+            />
+          </View>
+        </View>
+      </Modal>
       <CaseDetailsModal
         selectedCase={selectedCase}
         onClose={closeCaseDetailsModal}
         visible={isCaseDetailsModalVisible}
       />
-    </View>
+    </Animated.View>
   );
 };
 
@@ -126,6 +151,16 @@ const styles = StyleSheet.create({
     width: 100,
     marginBottom: 20,
     alignSelf: "center",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    padding: 20,
+    borderRadius: 10,
   },
 });
 
